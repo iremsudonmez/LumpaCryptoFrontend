@@ -1,6 +1,7 @@
 import type { ApiErrorBody } from './types';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+// empty string in prod -> requests go relative (/api/v1/...), same origin as backend
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 // thrown for every non-2xx response -> ui maps err.code to friendly text
 export class ApiError extends Error {
