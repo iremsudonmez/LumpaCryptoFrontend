@@ -19,7 +19,7 @@ export function Layout() {
     }`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-red-950/100 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-red-950/95 text-white">
       <header className="flex items-center justify-between px-6 py-4 bg-black border-b border-red-900/40">
         <div className="flex items-center gap-6">
           <h1 className="text-xl font-bold uppercase tracking-wide">
