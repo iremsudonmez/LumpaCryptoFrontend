@@ -25,3 +25,10 @@ export interface ApiErrorBody {
   code: string;
   timestamp: string;
 }
+
+// market
+export interface PriceQuote {
+  symbol: string;
+  price: number;
+  quotedAt: string;
+}
