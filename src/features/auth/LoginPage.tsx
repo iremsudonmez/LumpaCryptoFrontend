@@ -15,12 +15,12 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault(); // stop the browser from reloading the page
+    e.preventDefault();
     setError(null);
     setLoading(true);
     try {
       await login({ email, password });
-      navigate('/market'); // success -> go to the main app
+      navigate('/market');
     } catch (err) {
       if (err instanceof ApiError) setError(friendlyError(err.code, err.message));
       else setError('Unexpected error, please try again.');
@@ -30,13 +30,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-red-950 px-4">
-      {/* middle card -> bright red, sharp corners */}
-      <div className="w-full max-w-sm bg-red-600 rounded-none p-8 shadow-lg">
-        <h1 className="text-3xl font-bold text-black mb-1 uppercase tracking-wide">
-          LumpaCrypto
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-neutral-950 to-red-950/40 px-4">
+      <div className="w-full max-w-sm bg-neutral-900/80 border border-red-900/30 rounded-none p-8 shadow-lg shadow-red-950/40">
+        <h1 className="text-3xl font-bold text-white mb-1 uppercase tracking-wide">
+          Lumpa<span className="text-red-600">Crypto</span>
         </h1>
-        <p className="text-red-100 text-sm mb-6">Sign in to your account</p>
+        <p className="text-neutral-400 text-sm mb-6">Sign in to your account</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -45,7 +44,7 @@ export function LoginPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-none bg-red-900 text-white placeholder-red-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-black"
+            className="w-full rounded-none bg-neutral-800 text-white placeholder-neutral-500 px-4 py-2.5 outline-none border border-transparent focus:border-red-700 transition"
           />
           <input
             type="password"
@@ -53,18 +52,19 @@ export function LoginPage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-none bg-red-900 text-white placeholder-red-300 px-4 py-2.5 outline-none focus:ring-2 focus:ring-black"
+            className="w-full rounded-none bg-neutral-800 text-white placeholder-neutral-500 px-4 py-2.5 outline-none border border-transparent focus:border-red-700 transition"
           />
 
           {error && (
-            <p className="text-white text-sm bg-red-950 rounded-none px-3 py-2">{error}</p>
+            <p className="text-red-300 text-sm bg-red-950/60 border border-red-900/40 rounded-none px-3 py-2">
+              {error}
+            </p>
           )}
 
-          {/* sign in button -> black */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-none bg-black hover:bg-neutral-800 disabled:opacity-50 text-white font-medium py-2.5 transition"
+            className="w-full rounded-none bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-medium py-2.5 transition shadow-md shadow-red-950/50"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -77,9 +77,9 @@ export function LoginPage() {
           </button>
         </form>
 
-        <p className="text-red-100 text-sm mt-6 text-center">
+        <p className="text-neutral-400 text-sm mt-6 text-center">
           No account?{' '}
-          <Link to="/register" className="text-black font-semibold hover:underline">
+          <Link to="/register" className="text-red-500 hover:text-red-400 hover:underline">
             Register
           </Link>
         </p>
