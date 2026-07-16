@@ -1,4 +1,11 @@
-import type { AuthResponse, PriceQuote } from './types';
+import type {
+  AuthResponse,
+  PriceQuote,
+  PortfolioDto,
+  OrderRequest,
+  OrderResponse,
+  TransactionDto,
+} from './types';
 import { ApiError } from './client';
 
 // fake network latency -> loading spinners become visible and testable
@@ -15,14 +22,20 @@ const prices: Record<string, number> = {
   XRP: 0.52,
 };
 
+// fake wallet -> starts with fiat only, holdings grow as you trade
+const wallet = {
+  fiatBalance: 42350.0,
+  holdings: [] as { symbol: string; quantity: number }[],
+  transactions: [] as TransactionDto[],
+};
+
 function buildAuthResponse(email: string, username: string): AuthResponse {
   return {
     token: 'mock-token-' + crypto.randomUUID(),
     userId: crypto.randomUUID(),
     email,
     username,
-    // randomized starting balance -> mirrors backend rule ($10k-$100k)
-    walletBalance: Math.round((10_000 + Math.random() * 90_000) * 100) / 100,
+    walletBalance: wallet.fiatBalance,
     expiresAt: new Date(Date.now() + 3600_000).toISOString(),
   };
 }
@@ -62,5 +75,71 @@ export const mockApi = {
       price,
       quotedAt: now,
     }));
+  },
+
+  async getPortfolio(): Promise<PortfolioDto> {
+    await delay(400);
+    const holdings = wallet.holdings.map((h) => ({
+      ...h,
+      price: prices[h.symbol],
+      value: Math.round(h.quantity * prices[h.symbol] * 100) / 100,
+    }));
+    const totalValue =
+      Math.round(
+        (wallet.fiatBalance + holdings.reduce((s, h) => s + h.value, 0)) * 100,
+      ) / 100;
+    return {
+      fiatBalance: wallet.fiatBalance,
+      holdings,
+      totalValue,
+      recentTransactions: wallet.transactions.slice(0, 5),
+    };
+  },
+
+  async executeOrder(req: OrderRequest): Promise<OrderResponse> {
+    await delay(600);
+    const price = prices[req.symbol];
+    if (!price) throw new ApiError(400, 'UNSUPPORTED_SYMBOL', 'Unsupported symbol');
+    if (!(req.amount > 0))
+      throw new ApiError(400, 'VALIDATION_ERROR', 'Amount must be positive');
+
+    let quantity: number;
+    let fiatAmount: number;
+
+    if (req.side === 'BUY') {
+      // buy -> amount is fiat to spend, quantity rounded DOWN to 8dp
+      if (req.amount > wallet.fiatBalance)
+        throw new ApiError(422, 'INSUFFICIENT_FUNDS', 'Insufficient funds');
+      fiatAmount = req.amount;
+      quantity = Math.floor((req.amount / price) * 1e8) / 1e8;
+      wallet.fiatBalance = Math.round((wallet.fiatBalance - fiatAmount) * 100) / 100;
+      const h = wallet.holdings.find((x) => x.symbol === req.symbol);
+      if (h) h.quantity = Math.round((h.quantity + quantity) * 1e8) / 1e8;
+      else wallet.holdings.push({ symbol: req.symbol, quantity });
+    } else {
+      // sell -> amount is crypto quantity to sell
+      const h = wallet.holdings.find((x) => x.symbol === req.symbol);
+      if (!h || h.quantity < req.amount)
+        throw new ApiError(422, 'INSUFFICIENT_HOLDINGS', 'Not enough holdings');
+      quantity = req.amount;
+      fiatAmount = Math.round(quantity * price * 100) / 100;
+      h.quantity = Math.round((h.quantity - quantity) * 1e8) / 1e8;
+      if (h.quantity === 0)
+        wallet.holdings = wallet.holdings.filter((x) => x.symbol !== req.symbol);
+      wallet.fiatBalance = Math.round((wallet.fiatBalance + fiatAmount) * 100) / 100;
+    }
+
+    const tx: TransactionDto = {
+      id: crypto.randomUUID(),
+      symbol: req.symbol,
+      side: req.side,
+      quantity,
+      executionPrice: price,
+      fiatAmount,
+      createdAt: new Date().toISOString(),
+    };
+    wallet.transactions.unshift(tx);
+
+    return { ...tx, fiatBalance: wallet.fiatBalance };
   },
 };

@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getPrices } from '../../api/market';
 import { useAuth } from '../../state/AuthContext';
@@ -6,16 +7,34 @@ import { Spinner } from '../../components/Spinner';
 import { ApiError } from '../../api/client';
 import { friendlyError } from '../../api/errorMessages';
 
+// direction of the latest price move per symbol
+type Direction = 'up' | 'down' | 'same';
+
 export function MarketPage() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
-  // refetchInterval -> assignment rule: prices refresh every 15 seconds
   const { data, error, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['prices'],
     queryFn: getPrices,
     refetchInterval: 15_000,
   });
+
+  // previous prices live in a ref -> survives re-renders without causing them
+  const prevPrices = useRef<Record<string, number>>({});
+  const directions = useRef<Record<string, Direction>>({});
+
+  useEffect(() => {
+    if (!data) return;
+    for (const q of data) {
+      const prev = prevPrices.current[q.symbol];
+      if (prev === undefined) directions.current[q.symbol] = 'same';
+      else if (q.price > prev) directions.current[q.symbol] = 'up';
+      else if (q.price < prev) directions.current[q.symbol] = 'down';
+      else directions.current[q.symbol] = 'same';
+      prevPrices.current[q.symbol] = q.price;
+    }
+  }, [data]);
 
   const handleLogout = async () => {
     await logout();
@@ -24,7 +43,6 @@ export function MarketPage() {
 
   return (
     <div className="min-h-screen bg-red-950 text-white">
-      {/* top bar */}
       <header className="flex items-center justify-between px-6 py-4 bg-black">
         <h1 className="text-xl font-bold uppercase tracking-wide">LumpaCrypto</h1>
         <div className="flex items-center gap-4">
@@ -51,7 +69,6 @@ export function MarketPage() {
           </button>
         </div>
 
-        {/* first load -> full spinner; later refreshes keep old data on screen */}
         {isLoading && (
           <div className="flex justify-center py-16">
             <Spinner className="h-8 w-8" />
@@ -68,17 +85,30 @@ export function MarketPage() {
 
         {data && (
           <div className="bg-black rounded-none divide-y divide-red-950">
-            {data.map((quote) => (
-              <div
-                key={quote.symbol}
-                className="flex items-center justify-between px-5 py-4 hover:bg-neutral-900 cursor-pointer transition"
-              >
-                <span className="font-semibold">{quote.symbol}</span>
-                <span className="tabular-nums">
-                  ${quote.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-            ))}
+            {data.map((quote) => {
+              const dir = directions.current[quote.symbol] ?? 'same';
+              return (
+                <div
+                  key={quote.symbol}
+                  className="flex items-center justify-between px-5 py-4 hover:bg-neutral-900 cursor-pointer transition"
+                >
+                  <span className="font-semibold">{quote.symbol}</span>
+                  <span
+                    className={`tabular-nums flex items-center gap-2 ${
+                      dir === 'up'
+                        ? 'text-green-400'
+                        : dir === 'down'
+                          ? 'text-red-400'
+                          : 'text-white'
+                    }`}
+                  >
+                    {dir === 'up' && <span>▲</span>}
+                    {dir === 'down' && <span>▼</span>}
+                    ${quote.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
