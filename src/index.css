@@ -1,1 +1,40 @@
 @import "tailwindcss";
+
+/* modal entrance */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* price flash -> row briefly glows when a price changes */
+@keyframes flashGreen {
+  0% { background-color: rgba(74, 222, 128, 0.15); }
+  100% { background-color: transparent; }
+}
+@keyframes flashRed {
+  0% { background-color: rgba(248, 113, 113, 0.15); }
+  100% { background-color: transparent; }
+}
+.flash-up { animation: flashGreen 1s ease-out; }
+.flash-down { animation: flashRed 1s ease-out; }
+
+/* markdown inside ai chat bubbles */
+.prose-chat p { margin: 0 0 .5rem; }
+.prose-chat p:last-child { margin-bottom: 0; }
+.prose-chat ul, .prose-chat ol { margin: .25rem 0 .5rem 1.25rem; }
+.prose-chat ul { list-style: disc; }
+.prose-chat ol { list-style: decimal; }
+.prose-chat strong { color: #fff; }
+.prose-chat code {
+  background: #262626;
+  padding: .1rem .3rem;
+  font-size: .8em;
+}
+.prose-chat h1, .prose-chat h2, .prose-chat h3 {
+  font-weight: 600;
+  margin: .5rem 0 .25rem;
+}

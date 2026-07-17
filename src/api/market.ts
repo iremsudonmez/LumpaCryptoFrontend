@@ -9,3 +9,9 @@ export async function getPrices(): Promise<PriceQuote[]> {
     ? mockApi.getPrices()
     : request<PriceQuote[]>('/api/v1/market/prices', { auth: false });
 }
+
+export async function getPriceHistory(symbol: string): Promise<PriceQuote[]> {
+  return USE_MOCK
+    ? mockApi.getPriceHistory(symbol)
+    : request<PriceQuote[]>(`/api/v1/market/prices/${symbol}/history`, { auth: false });
+}

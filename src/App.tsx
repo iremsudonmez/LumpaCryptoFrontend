@@ -3,6 +3,7 @@ import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
 import { MarketPage } from './features/market/MarketPage';
 import { PortfolioPage } from './features/portfolio/PortfolioPage';
+import { AiChatPage } from './features/ai-chat/AiChatPage';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 
@@ -20,6 +21,7 @@ export default function App() {
       >
         <Route path="/market" element={<MarketPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
+        <Route path="/ai" element={<AiChatPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/market" replace />} />
     </Routes>

@@ -1,4 +1,4 @@
-// auth shapes -> match elif's live swagger
+// auth shapes -> match live swagger
 export interface RegisterRequest {
   email: string;
   username: string;
@@ -76,4 +76,14 @@ export interface PortfolioDto {
   holdings: HoldingDto[];
   totalValue: number;
   recentTransactions: TransactionDto[];
+}
+
+// ai
+export interface AiAskRequest {
+  question: string;
+}
+
+export interface AiAskResponse {
+  answer: string;
+  format: string;
 }

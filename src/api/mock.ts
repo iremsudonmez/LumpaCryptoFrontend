@@ -35,6 +35,7 @@ function buildAuthResponse(email: string, username: string): AuthResponse {
     userId: crypto.randomUUID(),
     email,
     username,
+    // randomized starting balance -> mirrors backend rule ($10k-$100k)
     walletBalance: wallet.fiatBalance,
     expiresAt: new Date(Date.now() + 3600_000).toISOString(),
   };
@@ -75,6 +76,25 @@ export const mockApi = {
       price,
       quotedAt: now,
     }));
+  },
+
+  async getPriceHistory(symbol: string): Promise<PriceQuote[]> {
+    await delay(300);
+    // random walk backwards from current price -> fake but realistic history
+    const current = prices[symbol];
+    if (!current) throw new ApiError(400, 'UNSUPPORTED_SYMBOL', 'Unsupported symbol');
+    const points: PriceQuote[] = [];
+    let p = current;
+    const now = Date.now();
+    for (let i = 0; i < 60; i++) {
+      points.unshift({
+        symbol,
+        price: Math.round(p * 100) / 100,
+        quotedAt: new Date(now - i * 15_000).toISOString(),
+      });
+      p = p / (1 + (Math.random() - 0.5) * 0.008);
+    }
+    return points;
   },
 
   async getPortfolio(): Promise<PortfolioDto> {
@@ -141,5 +161,13 @@ export const mockApi = {
     wallet.transactions.unshift(tx);
 
     return { ...tx, fiatBalance: wallet.fiatBalance };
+  },
+
+  async askAi(question: string): Promise<{ answer: string; format: string }> {
+    await delay(1200);
+    return {
+      answer: `**Mock answer** — you asked: "${question}". Real Gemini responses arrive after backend integration.`,
+      format: 'markdown',
+    };
   },
 };

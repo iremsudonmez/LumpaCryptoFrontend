@@ -32,6 +32,9 @@ export function Layout() {
             <NavLink to="/portfolio" className={tabClass}>
               Portfolio
             </NavLink>
+            <NavLink to="/ai" className={tabClass}>
+              AI
+            </NavLink>
           </nav>
         </div>
         <div className="flex items-center gap-4">

@@ -68,11 +68,14 @@ export function MarketPage() {
           <div className="bg-neutral-900/80 border border-red-900/30 rounded-none divide-y divide-neutral-800 shadow-lg shadow-red-950/40">
             {data.map((quote) => {
               const dir = directions.current[quote.symbol] ?? 'same';
+              // key includes price -> react remounts the row on change, replaying the flash
+              const flashClass =
+                dir === 'up' ? 'flash-up' : dir === 'down' ? 'flash-down' : '';
               return (
                 <div
-                  key={quote.symbol}
+                  key={`${quote.symbol}-${quote.price}`}
                   onClick={() => setSelected(quote)}
-                  className="flex items-center justify-between px-5 py-4 hover:bg-neutral-800/70 cursor-pointer transition"
+                  className={`flex items-center justify-between px-5 py-4 hover:bg-neutral-800/70 cursor-pointer transition ${flashClass}`}
                 >
                   <span className="font-semibold">{quote.symbol}</span>
                   <span

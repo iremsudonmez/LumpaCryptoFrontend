@@ -4,6 +4,7 @@ import { getPortfolio, executeOrder } from '../../api/trading';
 import { Spinner } from '../../components/Spinner';
 import { ApiError } from '../../api/client';
 import { friendlyError } from '../../api/errorMessages';
+import { PriceChart } from '../../features/market/PriceChart';
 import type { OrderSide, PriceQuote } from '../../api/types';
 
 interface Props {
@@ -70,12 +71,12 @@ export function TradeModal({ quote, onClose }: Props) {
   return (
     // dark backdrop -> clicking it closes the modal
     <div
-      className="fixed inset-0 bg-black/80 flex items-center justify-center px-4 z-50"
+      className="fixed inset-0 bg-black/80 flex items-center justify-center px-4 z-50 animate-[fadeIn_.15s_ease-out]"
       onClick={onClose}
     >
       {/* stopPropagation -> clicks inside the card must not close it */}
       <div
-        className="w-full max-w-md bg-neutral-900 border border-red-900/40 rounded-none p-6 shadow-xl shadow-red-950/50"
+        className="w-full max-w-md bg-neutral-900 border border-red-900/40 rounded-none p-6 shadow-xl shadow-red-950/50 animate-[slideUp_.2s_ease-out]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-1">
@@ -87,9 +88,14 @@ export function TradeModal({ quote, onClose }: Props) {
             ×
           </button>
         </div>
-        <p className="text-neutral-400 text-sm mb-4 tabular-nums">
+        <p className="text-neutral-400 text-sm mb-3 tabular-nums">
           Current price: ${quote.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </p>
+
+        {/* price history chart */}
+        <div className="mb-4 -mx-2">
+          <PriceChart symbol={quote.symbol} />
+        </div>
 
         {portfolio && (
           <p className="text-neutral-400 text-xs mb-4">
